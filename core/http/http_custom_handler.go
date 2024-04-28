@@ -1,40 +1,58 @@
 package http
 
 import (
+	"gobook/core/interceptions"
+	"log"
 	"net/http"
 )
 
 type CoreHttpCustomHandler struct {
-	Mux           *http.ServeMux
-	Interceptions []InterceptionHandle
+	Mux    *http.ServeMux
+	Logger *log.Logger
 }
 
-func (httpHandler CoreHttpCustomHandler) HandleServiceEndpoint(
-	router string, handler func(http.ResponseWriter, *http.Request),
-) {
-	httpHandler.Mux.HandleFunc(
-		router,
-		func(response http.ResponseWriter, request *http.Request) {
-			handlerInterception(
-				httpHandler.Interceptions,
-				response,
-				request,
-				handler,
-			)
-		},
-	)
-}
+// interceptionRegister
+// Register the interception to the request  /*
+func interceptionRegister(
+	origen string,
+	next http.Handler,
+	logger *log.Logger,
+	excludes []string,
+) http.Handler {
+	logger.Println("Registering interception")
 
-func handlerInterception(
-	middlewares []InterceptionHandle,
-	response http.ResponseWriter,
-	request *http.Request,
-	handler func(http.ResponseWriter, *http.Request),
-) {
+	excludeLogger := false
 
-	for _, middleware := range middlewares {
-		_ = middleware.Handle(response, request)
+	for _, exclude := range excludes {
+		if exclude == interceptions.InterceptionLogger {
+			excludeLogger = true
+			continue
+		}
 	}
 
-	handler(response, request)
+	if excludeLogger == false {
+		next = interceptions.LoggerStart().Middleware(next)
+	} else {
+		logger.Println("Interception Logger is excluded for %v", origen)
+	}
+
+	return next
+}
+
+// HandleServiceEndpoint
+// register endpoint with perform interception
+// before process resource /*
+func (httpHandler CoreHttpCustomHandler) HandleServiceEndpoint(
+	router string,
+	handler func(response http.ResponseWriter, request *http.Request),
+	excludes []string,
+) http.Handler {
+	logger := httpHandler.Logger
+	httpHandler.Mux.HandleFunc(router, handler)
+	return interceptionRegister(
+		router,
+		httpHandler.Mux,
+		logger,
+		excludes,
+	)
 }

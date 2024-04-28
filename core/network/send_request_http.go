@@ -36,6 +36,7 @@ func (w SendRequestHttp) SendRequest(
 	options *map[string]any,
 ) {
 	defaultResponse := DefaultResponse{Data: response}
+	req := w.R
 
 	if options != nil {
 		if _, ok := (*options)[key_time]; ok {
@@ -54,12 +55,12 @@ func (w SendRequestHttp) SendRequest(
 		}
 	}
 
-	w.R.WriteHeader(code)
+	req.WriteHeader(code)
 	data, err := json.Marshal(defaultResponse)
 
 	if err != nil {
-		w.R.WriteHeader(500)
-		_, err = w.R.Write([]byte(fmt.Sprint(" { \"message\": \"Server error\" }")))
+		req.WriteHeader(500)
+		_, err = req.Write([]byte(fmt.Sprint(" { \"message\": \"Server error\" }")))
 		if err != nil {
 			panic(err)
 		}
@@ -68,8 +69,8 @@ func (w SendRequestHttp) SendRequest(
 	_, err = w.R.Write(data)
 
 	if err != nil {
-		w.R.WriteHeader(500)
-		_, err = w.R.Write([]byte(fmt.Sprint(" { \"message\": \"Server error\" }")))
+		req.WriteHeader(500)
+		_, err = req.Write([]byte(fmt.Sprint(" { \"message\": \"Server error\" }")))
 		if err != nil {
 			panic(err)
 		}
