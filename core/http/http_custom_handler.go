@@ -1,27 +1,36 @@
 package http
 
 import (
+	"encoding/json"
 	"gobook/core/interceptions"
+	"gobook/core/network"
 	"log"
 	"net/http"
 )
 
+// CoreHttpCustomHandler Struct to init setting with HandleServiceEndpoint /*
 type CoreHttpCustomHandler struct {
 	Mux    *http.ServeMux
 	Logger *log.Logger
 }
 
 // interceptionRegister
-// Register the interception to the request  /*
+// Register the interception to the request
+
+// R *network.DefaultError
+//   - nil all interception process with successful
+//   - not nil some interception break in validation /*
 func interceptionRegister(
 	origen string,
-	next http.Handler,
+	writer http.ResponseWriter,
+	request *http.Request,
 	logger *log.Logger,
 	excludes []string,
-) http.Handler {
-	logger.Println("Registering interception")
+) *network.DefaultError {
+	logger.Println("Registering interception for %v", origen)
 
 	excludeLogger := false
+	var performError *network.DefaultError
 
 	for _, exclude := range excludes {
 		if exclude == interceptions.InterceptionLogger {
@@ -30,13 +39,11 @@ func interceptionRegister(
 		}
 	}
 
-	if excludeLogger == false {
-		next = interceptions.LoggerStart().Middleware(next)
-	} else {
-		logger.Println("Interception Logger is excluded for %v", origen)
+	if excludeLogger == false && performError == nil {
+		performError = interceptions.LoggerStart().Middleware(writer, request)
 	}
 
-	return next
+	return performError
 }
 
 // HandleServiceEndpoint
@@ -46,13 +53,27 @@ func (httpHandler CoreHttpCustomHandler) HandleServiceEndpoint(
 	router string,
 	handler func(response http.ResponseWriter, request *http.Request),
 	excludes []string,
-) http.Handler {
+) {
 	logger := httpHandler.Logger
-	httpHandler.Mux.HandleFunc(router, handler)
-	return interceptionRegister(
-		router,
-		httpHandler.Mux,
-		logger,
-		excludes,
-	)
+	httpHandler.Mux.HandleFunc(router, func(writer http.ResponseWriter, request *http.Request) {
+		if err := interceptionRegister(router, writer, request, logger, excludes); err != nil {
+
+			// Register all header error by interception failed
+			for key, value := range err.Headers {
+				writer.Header().Set(key, value)
+			}
+
+			// Setup status code and serialize struct to response error
+			writer.WriteHeader(err.StatusCode)
+			data, _ := json.Marshal(err.Data)
+
+			if _, err := writer.Write(data); err != nil {
+				logger.Println(err)
+				return
+			}
+		} else {
+			// Execute resource endpoint request by client
+			handler(writer, request)
+		}
+	})
 }

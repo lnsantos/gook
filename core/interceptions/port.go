@@ -1,9 +1,12 @@
 package interceptions
 
-import "net/http"
+import (
+	"gobook/core/network"
+	"net/http"
+)
 
 type InterceptionFunction struct {
-	Middleware func(next http.Handler) http.Handler
+	Middleware func(response http.ResponseWriter, request *http.Request) *network.DefaultError
 }
 
 const (

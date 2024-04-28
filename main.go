@@ -17,11 +17,11 @@ func main() {
 	settings := core.CoreHttpCustomHandler{Mux: handler, Logger: logger}
 
 	// register endpoint service
-	customHandler := settings.HandleServiceEndpoint(transport.GetBookContract())
+	settings.HandleServiceEndpoint(transport.GetBookContract())
 
 	server := &http.Server{
-		Addr:           ":8080",
-		Handler:        customHandler,
+		Addr:           ":8081",
+		Handler:        handler,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
