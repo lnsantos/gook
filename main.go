@@ -1,15 +1,25 @@
 package main
 
 import (
+	"fmt"
+	core "gobook/core/http"
 	"gobook/transport"
 	"net/http"
 	"time"
 )
 
+func registerInterception() []core.InterceptionHandle {
+	return []core.InterceptionHandle{}
+}
+
 func main() {
 	handler := http.NewServeMux()
+	settings := core.CoreHttpCustomHandler{
+		Mux:           handler,
+		Interceptions: registerInterception(),
+	}
 
-	handler.HandleFunc(transport.GetBookContract())
+	settings.HandleServiceEndpoint(transport.GetBookContract())
 
 	server := &http.Server{
 		Addr:           ":8080",
@@ -23,4 +33,6 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+
+	_ = fmt.Sprint("Server running on port 8080")
 }

@@ -59,7 +59,7 @@ func (w SendRequestHttp) SendRequest(
 
 	if err != nil {
 		w.R.WriteHeader(500)
-		_, err = w.R.Write([]byte(fmt.Sprintf("Error: %v", err)))
+		_, err = w.R.Write([]byte(fmt.Sprint(" { \"message\": \"Server error\" }")))
 		if err != nil {
 			panic(err)
 		}
@@ -69,7 +69,7 @@ func (w SendRequestHttp) SendRequest(
 
 	if err != nil {
 		w.R.WriteHeader(500)
-		_, err = w.R.Write([]byte(fmt.Sprintf("Error: %v", err)))
+		_, err = w.R.Write([]byte(fmt.Sprint(" { \"message\": \"Server error\" }")))
 		if err != nil {
 			panic(err)
 		}
