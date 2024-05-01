@@ -2,7 +2,7 @@ package book
 
 import (
 	"fmt"
-	nt "gobook/core/network"
+	nt "gobook/core/net"
 	"net/http"
 )
 import source "gobook/datasource/books"

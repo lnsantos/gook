@@ -1,8 +1,9 @@
-package network
+package net
 
 import (
 	"encoding/json"
 	"fmt"
+	"gobook/core/netapi"
 	"net/http"
 )
 
@@ -11,19 +12,6 @@ const (
 	key_message = "message"
 	key_status  = "status"
 )
-
-type DefaultError struct {
-	Headers    map[string]string
-	StatusCode int
-	Data       DefaultResponse
-}
-
-type DefaultResponse struct {
-	Message *string `json:"message,omitempty"`
-	Data    any     `json:"data"`
-	Time    *int32  `json:"time,omitempty"`
-	Status  *bool   `json:"status,omitempty"`
-}
 
 type SendRequestHttp struct {
 	R http.ResponseWriter
@@ -41,7 +29,7 @@ func (w SendRequestHttp) SendRequest(
 	response any,
 	options *map[string]any,
 ) {
-	defaultResponse := DefaultResponse{Data: response}
+	defaultResponse := netapi.DefaultResponse{Data: response}
 	req := w.R
 
 	if options != nil {

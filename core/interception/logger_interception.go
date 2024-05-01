@@ -1,14 +1,14 @@
-package interceptions
+package interception
 
 import (
-	"gobook/core/network"
+	"gobook/core/netapi"
 	"log"
 	"net/http"
 )
 
 func LoggerStart() InterceptionFunction {
 	return InterceptionFunction{
-		Middleware: func(response http.ResponseWriter, request *http.Request) *network.DefaultError {
+		Middleware: func(response http.ResponseWriter, request *http.Request) *netapi.DefaultError {
 			log.Println("Request URL: ", request.URL)
 
 			if request.Header.Get("Authorization") == "" {
@@ -17,10 +17,10 @@ func LoggerStart() InterceptionFunction {
 
 				log.Printf("Request dropped interception canceled by logger :: %v\n", request.URL)
 
-				return &network.DefaultError{
+				return &netapi.DefaultError{
 					Headers:    map[string]string{},
 					StatusCode: http.StatusUnauthorized,
-					Data:       network.DefaultResponse{Data: "Unauthorized"},
+					Data:       netapi.DefaultResponse{Data: "Unauthorized"},
 				}
 			}
 

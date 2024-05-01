@@ -1,9 +1,9 @@
-package http
+package net
 
 import (
 	"encoding/json"
-	"gobook/core/interceptions"
-	"gobook/core/network"
+	"gobook/core/interception"
+	"gobook/core/netapi"
 	"log"
 	"net/http"
 )
@@ -17,7 +17,7 @@ type CoreHttpCustomHandler struct {
 // interceptionRegister
 // Register the interception to the request
 
-// R *network.DefaultError
+// R *net.DefaultError
 //   - nil all interception process with successful
 //   - not nil some interception break in validation /*
 func interceptionRegister(
@@ -26,21 +26,21 @@ func interceptionRegister(
 	request *http.Request,
 	logger *log.Logger,
 	excludes []string,
-) *network.DefaultError {
+) *netapi.DefaultError {
 	logger.Println("Registering interception for %v", origen)
 
 	excludeLogger := false
-	var performError *network.DefaultError
+	var performError *netapi.DefaultError
 
 	for _, exclude := range excludes {
-		if exclude == interceptions.InterceptionLogger {
+		if exclude == interception.InterceptionLogger {
 			excludeLogger = true
 			continue
 		}
 	}
 
 	if excludeLogger == false && performError == nil {
-		performError = interceptions.LoggerStart().Middleware(writer, request)
+		performError = interception.LoggerStart().Middleware(writer, request)
 	}
 
 	return performError

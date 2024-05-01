@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	core "gobook/core/http"
+	"gobook/core/net"
 	"gobook/transport"
 	"log"
 	"net/http"
@@ -14,7 +14,7 @@ func main() {
 	fmt.Print("Server is running on port 8080\n")
 	handler := http.NewServeMux()
 	logger := log.New(os.Stdout, "http: ", log.LstdFlags)
-	settings := core.CoreHttpCustomHandler{Mux: handler, Logger: logger}
+	settings := net.CoreHttpCustomHandler{Mux: handler, Logger: logger}
 
 	// register endpoint service
 	settings.HandleServiceEndpoint(transport.GetBookContract())
